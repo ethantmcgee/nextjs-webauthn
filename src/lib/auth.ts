@@ -12,7 +12,7 @@ import type {
     PublicKeyCredentialWithAttestationJSON,
 } from "@github/webauthn-json";
 import { NextApiRequest, NextApiResponse } from "next";
-import { RegistrationResponseJSON } from "@simplewebauthn/types";
+import {AuthenticationResponseJSON, RegistrationResponseJSON} from "@simplewebauthn/types";
 import { db } from "@/lib/db";
 import { users, passkey } from "@/lib/schema";
 
@@ -35,7 +35,7 @@ export async function register(req: NextApiRequest, res: NextApiResponse, sessio
     const challenge = session.challenge ?? "";
     const credential = req.body
         .credential as PublicKeyCredentialWithAttestationJSON;
-    const { email, username } = req.body;
+    const { email } = req.body;
 
     let verification: VerifiedRegistrationResponse;
 
@@ -69,7 +69,7 @@ export async function register(req: NextApiRequest, res: NextApiResponse, sessio
     const insertUser = (await db.insert(users).values({
         email,
     }).returning({ insertedId: users.id }))[0];
-    const userPasskey = await db.insert(passkey).values({
+    await db.insert(passkey).values({
         name: 'initial-passkey',
         userId: insertUser.insertedId,
         externalId: clean(binaryToBase64url(credentialID)),
@@ -78,6 +78,65 @@ export async function register(req: NextApiRequest, res: NextApiResponse, sessio
 
     console.log(`Registered new user ${insertUser.insertedId}`);
     return insertUser;
+}
+
+export async function login(req: NextApiRequest, res: NextApiResponse, session: any) {
+    const challenge = session.challenge ?? "";
+    const credential = req.body
+        .credential as PublicKeyCredentialWithAssertionJSON;
+    const email = req.body.email;
+
+    if (credential?.id == null) {
+        throw new Error("Invalid Credentials");
+    }
+
+    // Find our credential record
+    const userCredential = await prisma.credential.findUnique({
+        select: {
+            id: true,
+            userId: true,
+            externalId: true,
+            publicKey: true,
+            signCount: true,
+            user: {
+                select: {
+                    email: true,
+                },
+            },
+        },
+        where: {
+            externalId: credential.id,
+        },
+    });
+
+    if (userCredential == null) {
+        throw new Error("Unknown User");
+    }
+
+    let verification: VerifiedAuthenticationResponse;
+    try {
+        // Verify browser credential with our record
+        verification = await verifyAuthenticationResponse({
+            response: credential as AuthenticationResponseJSON,
+            expectedChallenge: challenge,
+            authenticator: {
+                credentialID: userCredential.externalId,
+                credentialPublicKey: userCredential.publicKey,
+                counter: userCredential.signCount,
+            },
+            ...HOST_SETTINGS,
+        });
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+    if (!verification.verified || email !== userCredential.user.email) {
+        throw new Error("Login verification failed");
+    }
+
+    console.log(`Logged in as user ${userCredential.userId}`);
+    return userCredential.userId;
 }
 
 function clean(str: string) {

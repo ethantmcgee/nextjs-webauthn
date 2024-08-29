@@ -10,11 +10,14 @@ export default function Admin({
         <Fragment>
             <h1>Admin</h1>
             <span>User ID: {userId}</span>
+            <form method="POST" action="/api/auth/logout">
+                <button>Logout</button>
+            </form>
         </Fragment>
     );
 }
 
-export const getServerSideProps = async function ({ req, res }: { req: NextApiRequest, res: NextApiResponse }) {
+export const getServerSideProps = async function ({req, res}: { req: NextApiRequest, res: NextApiResponse }) {
     const session: any = await getIronSession(req, res, sessionOptions);
     if (!!session.userId) {
         return {

@@ -9,7 +9,6 @@ import { sessionOptions } from "@/lib/session";
 export default function Register({ challenge }: { challenge: string }) {
     const router = useRouter();
     const [error, setError] = useState("");
-    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
 
@@ -37,7 +36,7 @@ export default function Register({ challenge }: { challenge: string }) {
                     // Maybe change these later
                     id: window.crypto.randomUUID(),
                     name: email,
-                    displayName: username,
+                    displayName: email,
                 },
                 // Don't change these later
                 pubKeyCredParams: [{ alg: -7, type: "public-key" }],
@@ -52,7 +51,7 @@ export default function Register({ challenge }: { challenge: string }) {
         // Call our registration endpoint with the new account details
         const result = await fetch("/api/auth/register", {
             method: "POST",
-            body: JSON.stringify({ email, username, credential }),
+            body: JSON.stringify({ email, credential }),
             headers: {
                 "Content-Type": "application/json",
             },
@@ -72,14 +71,6 @@ export default function Register({ challenge }: { challenge: string }) {
                 <>
                     <h1>Register Account</h1>
                     <form method="POST" onSubmit={onSubmit}>
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            placeholder="Username"
-                            value={username}
-                            onChange={(event) => setUsername(event.target.value)}
-                        />
                         <input
                             type="email"
                             id="email"
