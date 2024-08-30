@@ -22,16 +22,6 @@ const HOST_SETTINGS = {
     expectedRPID: process.env.RPID!,
 };
 
-function binaryToBase64url(bytes: Uint8Array) {
-    let str = "";
-
-    bytes.forEach((charCode) => {
-        str += String.fromCharCode(charCode);
-    });
-
-    return btoa(str);
-}
-
 export async function register(req: NextApiRequest, res: NextApiResponse, session: any) {
     const challenge = session.challenge ?? "";
     const credential = req.body
@@ -73,7 +63,7 @@ export async function register(req: NextApiRequest, res: NextApiResponse, sessio
     await db.insert(passkey).values({
         name: 'initial-passkey',
         userId: insertUser.insertedId,
-        externalId: clean(binaryToBase64url(credentialID)),
+        externalId: credentialID,
         publicKey: Buffer.from(credentialPublicKey),
     });
 
@@ -98,6 +88,8 @@ export async function login(req: NextApiRequest, res: NextApiResponse, session: 
         throw new Error("Unknown User");
     }
 
+    console.log(userCredential);
+
     let verification: VerifiedAuthenticationResponse;
     try {
         // Verify browser credential with our record
@@ -106,7 +98,7 @@ export async function login(req: NextApiRequest, res: NextApiResponse, session: 
             expectedChallenge: challenge,
             authenticator: {
                 credentialID: userCredential[0].externalId,
-                credentialPublicKey: userCredential[0].publicKey,
+                credentialPublicKey: userCredential[0].publicKey.data,
             },
             ...HOST_SETTINGS,
         });

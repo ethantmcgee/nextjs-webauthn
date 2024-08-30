@@ -5,6 +5,7 @@ import {
     text,
     varchar,
     timestamp,
+    jsonb,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable(
@@ -24,7 +25,7 @@ export const passkey = pgTable(
         userId: bigint("user_id", { mode: 'bigint' }).references(() => users.id),
         name: varchar("name", { length: 255 }).notNull(),
         externalId: text("external_id").notNull().unique(),
-        publicKey: text("public_key").notNull().unique(),
+        publicKey: jsonb("public_key").notNull().unique(),
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at").defaultNow().notNull(),
     }

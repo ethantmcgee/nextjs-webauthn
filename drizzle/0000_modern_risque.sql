@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "passkeys" (
 	"user_id" bigint,
 	"name" varchar(255) NOT NULL,
 	"external_id" text NOT NULL,
-	"public_key" text NOT NULL,
+	"public_key" jsonb NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "passkeys_external_id_unique" UNIQUE("external_id"),

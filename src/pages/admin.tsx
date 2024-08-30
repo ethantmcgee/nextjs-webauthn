@@ -19,7 +19,7 @@ export default function Admin({
 
 export const getServerSideProps = async function ({req, res}: { req: NextApiRequest, res: NextApiResponse }) {
     const session: any = await getIronSession(req, res, sessionOptions);
-    if (!!session.userId) {
+    if (!session.userId) {
         return {
             redirect: {
                 destination: "/login",
