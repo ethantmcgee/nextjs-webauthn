@@ -15,6 +15,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import {AuthenticationResponseJSON, RegistrationResponseJSON} from "@simplewebauthn/types";
 import { db } from "@/lib/db";
 import { users, passkey } from "@/lib/schema";
+import { eq } from 'drizzle-orm';
 
 const HOST_SETTINGS = {
     expectedOrigin: process.env.ORIGIN_URL!,
@@ -91,23 +92,7 @@ export async function login(req: NextApiRequest, res: NextApiResponse, session: 
     }
 
     // Find our credential record
-    const userCredential = await prisma.credential.findUnique({
-        select: {
-            id: true,
-            userId: true,
-            externalId: true,
-            publicKey: true,
-            signCount: true,
-            user: {
-                select: {
-                    email: true,
-                },
-            },
-        },
-        where: {
-            externalId: credential.id,
-        },
-    });
+    const userCredential = await db.select().from(passkey).where(eq(passkey.externalId, credential.id));
 
     if (userCredential == null) {
         throw new Error("Unknown User");
@@ -120,9 +105,8 @@ export async function login(req: NextApiRequest, res: NextApiResponse, session: 
             response: credential as AuthenticationResponseJSON,
             expectedChallenge: challenge,
             authenticator: {
-                credentialID: userCredential.externalId,
-                credentialPublicKey: userCredential.publicKey,
-                counter: userCredential.signCount,
+                credentialID: userCredential[0].externalId,
+                credentialPublicKey: userCredential[0].publicKey,
             },
             ...HOST_SETTINGS,
         });
@@ -131,12 +115,14 @@ export async function login(req: NextApiRequest, res: NextApiResponse, session: 
         throw error;
     }
 
-    if (!verification.verified || email !== userCredential.user.email) {
+    const user = await db.select().from(users).where(eq(users.id, userCredential[0].userId));
+
+    if (!verification.verified || email !== user[0].email) {
         throw new Error("Login verification failed");
     }
 
-    console.log(`Logged in as user ${userCredential.userId}`);
-    return userCredential.userId;
+    console.log(`Logged in as user ${userCredential[0].userId}`);
+    return userCredential[0].userId;
 }
 
 function clean(str: string) {
