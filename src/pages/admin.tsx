@@ -1,19 +1,16 @@
 import {InferGetServerSidePropsType, NextApiRequest, NextApiResponse} from "next";
-import { Fragment } from "react";
+import Layout from '@/components/layout';
 import { getIronSession } from 'iron-session';
 import { sessionOptions } from "@/lib/session";
 
-export default function Admin({
-                                  userId,
-                              }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Admin() {
     return (
-        <Fragment>
+        <Layout>
             <h1>Admin</h1>
-            <span>User ID: {userId}</span>
             <form method="POST" action="/api/auth/logout">
                 <button>Logout</button>
             </form>
-        </Fragment>
+        </Layout>
     );
 }
 
@@ -27,10 +24,4 @@ export const getServerSideProps = async function ({req, res}: { req: NextApiRequ
             },
         };
     }
-
-    return {
-        props: {
-            userId: session.userId ?? null,
-        },
-    };
 };
