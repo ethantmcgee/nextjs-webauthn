@@ -8,7 +8,7 @@ import {
     timestamp,
     jsonb,
     unique,
-    primaryKey,
+    primaryKey, boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -17,6 +17,8 @@ export const users = pgTable(
     {
         id: bigserial('id', { mode: 'bigint' }).primaryKey(),
         email: varchar('email', { length: 255 }).notNull().unique(),
+        password: varchar('password', { length: 255 }).notNull().unique(),
+        salt: varchar('salt', { length: 255 }).notNull().unique(),
         lastSignIn: timestamp('last_sign_in').defaultNow().notNull(),
         createdAt: timestamp('created_at').defaultNow().notNull(),
         updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -28,6 +30,7 @@ export const usersRelations = relations(users, ({ many }) => ({
     groups: many(groups),
     roles: many(roles),
     permissions: many(permissions),
+    employers: many(employers),
 }));
 
 export const twoFactorType = pgEnum('twoFactorType', ['totp', 'phone', 'email', 'passkey']);
@@ -68,6 +71,8 @@ export const groups = pgTable(
     {
         id: bigserial('id', {mode: 'bigint'}).primaryKey(),
         name: varchar('name', { length: 255 }).notNull().unique(),
+        requiresTwoFactor: boolean('requires_two_factor').default(false),
+        requiresPasskeyTwoFactor: boolean('requires_passkey_two_factor').default(false),
     }
 );
 
@@ -75,6 +80,7 @@ export const groupRelations = relations(groups, ({ many }) => ({
     users: many(users),
     roles: many(roles),
     permissions: many(permissions),
+    employers: many(employers),
 }));
 
 export const roles = pgTable(
@@ -82,6 +88,8 @@ export const roles = pgTable(
     {
         id: bigserial('id', {mode: 'bigint'}).primaryKey(),
         name: varchar('name', { length: 255 }).notNull().unique(),
+        requiresTwoFactor: boolean('requires_two_factor').default(false),
+        requiresPasskeyTwoFactor: boolean('requires_passkey_two_factor').default(false),
     }
 );
 
@@ -96,6 +104,8 @@ export const permissions = pgTable(
     {
         id: bigserial('id', {mode: 'bigint'}).primaryKey(),
         name: varchar('name', { length: 255 }).notNull().unique(),
+        requiresTwoFactor: boolean('requires_two_factor').default(false),
+        requiresPasskeyTwoFactor: boolean('requires_passkey_two_factor').default(false),
     }
 );
 
@@ -103,6 +113,20 @@ export const permissionRelations = relations(permissions, ({ many }) => ({
     users: many(users),
     groups: many(groups),
     roles: many(roles),
+}));
+
+export const employers = pgTable(
+    'employers',
+    {
+        id: bigserial('id', {mode: 'bigint'}).primaryKey(),
+        name: varchar('name', { length: 255 }).notNull().unique(),
+        requiresTwoFactor: boolean('requires_two_factor').default(false),
+        requiresPasskeyTwoFactor: boolean('requires_passkey_two_factor').default(false),
+    }
+);
+
+export const employerRelations = relations(permissions, ({ many }) => ({
+    users: many(users),
 }));
 
 export const userGroups = pgTable(
@@ -234,5 +258,49 @@ export const rolePermissionRelations = relations(rolePermissions, ({ one }) => (
     permission: one(permissions, {
         fields: [rolePermissions.permissionId],
         references: [permissions.id],
+    }),
+}));
+
+export const userEmployers = pgTable(
+    'user_employers',
+    {
+        userId: bigint('user_id', { mode: 'bigint' }).notNull().references(() => users.id),
+        employerId: bigint('employer_id', { mode: 'bigint' }).notNull().references(() => employers.id),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.userId, t.employerId] }),
+    }),
+);
+
+export const userEmployerRelations = relations(userEmployers, ({ one }) => ({
+    user: one(users, {
+        fields: [userEmployers.userId],
+        references: [users.id],
+    }),
+    employer: one(employers, {
+        fields: [userEmployers.employerId],
+        references: [employers.id],
+    }),
+}));
+
+export const groupEmployers = pgTable(
+    'group_employers',
+    {
+        groupId: bigint('user_group_id', { mode: 'bigint' }).notNull().references(() => groups.id),
+        employerId: bigint('employer_id', { mode: 'bigint' }).notNull().references(() => employers.id),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.groupId, t.employerId] }),
+    }),
+);
+
+export const groupEmployerRelations = relations(groupEmployers, ({ one }) => ({
+    group: one(groups, {
+        fields: [groupEmployers.groupId],
+        references: [groups.id],
+    }),
+    employer: one(employers, {
+        fields: [groupEmployers.employerId],
+        references: [employers.id],
     }),
 }));

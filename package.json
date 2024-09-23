@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.6.0",
@@ -29,7 +31,7 @@
     "@simplewebauthn/server": "^10.0.1",
     "drizzle-orm": "^0.33.0",
     "iron-session": "^8.0.3",
-    "next": "14.2.5",
+    "next": "^14.2.13",
     "postgres": "^3.4.4",
     "react": "^18",
     "react-dom": "^18"

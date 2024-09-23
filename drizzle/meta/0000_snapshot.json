@@ -1,9 +1,53 @@
 {
-  "id": "6caaf152-a5c4-49e4-9425-a380e01fac86",
+  "id": "90c43982-7ba2-41b5-95d6-6bb01e02b7f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.employers": {
+      "name": "employers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requires_two_factor": {
+          "name": "requires_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "requires_passkey_two_factor": {
+          "name": "requires_passkey_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "employers_name_unique": {
+          "name": "employers_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      }
+    },
     "public.group_permissions": {
       "name": "group_permissions",
       "schema": "",
@@ -133,6 +177,20 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "requires_two_factor": {
+          "name": "requires_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "requires_passkey_two_factor": {
+          "name": "requires_passkey_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -163,6 +221,20 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "requires_two_factor": {
+          "name": "requires_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "requires_passkey_two_factor": {
+          "name": "requires_passkey_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -250,6 +322,20 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "requires_two_factor": {
+          "name": "requires_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "requires_passkey_two_factor": {
+          "name": "requires_passkey_two_factor",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -575,6 +661,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "password": {
+          "name": "password",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "salt": {
+          "name": "salt",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "last_sign_in": {
           "name": "last_sign_in",
           "type": "timestamp",
@@ -606,6 +704,20 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        },
+        "users_password_unique": {
+          "name": "users_password_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "password"
+          ]
+        },
+        "users_salt_unique": {
+          "name": "users_salt_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "salt"
           ]
         }
       }

@@ -1,21 +1,20 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import { Container } from "@mui/material";
+
 import './global.css';
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "WebAuthN Demo",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
-  );
+export default function Index({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="h-screen" style={{
+            backgroundImage: `url(./images/background.jpg)`,
+            backgroundSize: 'cover',
+        }}>
+            <Header />
+            <Container maxWidth="xl">
+                {children}
+            </Container>
+            <Footer />
+        </div>
+    );
 }

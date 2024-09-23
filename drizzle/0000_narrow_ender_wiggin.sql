@@ -4,6 +4,14 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "employers" (
+	"id" bigserial PRIMARY KEY NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"requires_two_factor" boolean DEFAULT false,
+	"requires_passkey_two_factor" boolean DEFAULT false,
+	CONSTRAINT "employers_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "group_permissions" (
 	"group_id" bigint NOT NULL,
 	"permission_id" bigint NOT NULL,
@@ -19,12 +27,16 @@ CREATE TABLE IF NOT EXISTS "group_roles" (
 CREATE TABLE IF NOT EXISTS "groups" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"requires_two_factor" boolean DEFAULT false,
+	"requires_passkey_two_factor" boolean DEFAULT false,
 	CONSTRAINT "groups_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "permissions" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"requires_two_factor" boolean DEFAULT false,
+	"requires_passkey_two_factor" boolean DEFAULT false,
 	CONSTRAINT "permissions_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
@@ -37,6 +49,8 @@ CREATE TABLE IF NOT EXISTS "role_permissions" (
 CREATE TABLE IF NOT EXISTS "roles" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"requires_two_factor" boolean DEFAULT false,
+	"requires_passkey_two_factor" boolean DEFAULT false,
 	CONSTRAINT "roles_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
@@ -79,10 +93,14 @@ CREATE TABLE IF NOT EXISTS "user_roles" (
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
+	"password" varchar(255) NOT NULL,
+	"salt" varchar(255) NOT NULL,
 	"last_sign_in" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "users_email_unique" UNIQUE("email")
+	CONSTRAINT "users_email_unique" UNIQUE("email"),
+	CONSTRAINT "users_password_unique" UNIQUE("password"),
+	CONSTRAINT "users_salt_unique" UNIQUE("salt")
 );
 --> statement-breakpoint
 DO $$ BEGIN
